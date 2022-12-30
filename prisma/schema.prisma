@@ -1,0 +1,452 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  email String  @unique
+  name  String?
+  hash  String
+
+  zone String?
+
+  role        Role?        @relation(fields: [roleId], references: [id])
+  roleId      String?      @db.Uuid
+  profile     Profile?
+  patient     Patient?
+  prestataire Prestataire?
+  isActiveted Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  companie    Companie?    @relation(fields: [companieId], references: [id])
+  companieId  String?      @db.Uuid
+
+  Session    Session[]
+  Ticket     Ticket[]
+  Mutuelle   Mutuelle? @relation(fields: [mutuelleId], references: [id])
+  mutuelleId String?   @db.Uuid
+  Service    Service?  @relation(fields: [serviceId], references: [id])
+  serviceId  String?   @db.Uuid
+}
+
+model Profile {
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  avatar       String?
+  poste        String?
+  companieName String?
+  roleName     String?
+  zoneName     String?
+  gender       String?
+  bio          String
+  user         User?   @relation(fields: [userId], references: [id])
+  userId       String? @unique @db.Uuid
+}
+
+model Patient {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String?
+  birthday        String?
+  birthplace      String?
+  age             String
+  cni             String?
+  familySituation String?
+  groupeSanguin   String?
+  phone           String?
+  email           String?
+  gender          String?
+  adress          String?
+  secretCode      Int?    @default(123456)
+  matricule       String?
+  location        String?
+  avatar          String?
+  user            User?   @relation(fields: [userId], references: [id])
+  userId          String? @unique @db.Uuid
+
+  Zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  consultation Consultation[]
+  Ordonnances  Ordonnances[]
+  Vaccination  Vaccination[]
+  Ticket       Ticket[]
+  Mutuelle     Mutuelle?      @relation(fields: [mutuelleId], references: [id])
+  mutuelleId   String?        @db.Uuid
+  Service      Service?       @relation(fields: [serviceId], references: [id])
+  serviceId    String?        @db.Uuid
+  TicketItem   TicketItem[]
+}
+
+model Prestataire {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String?
+  gender     String?
+  birthday   String?
+  birthplace String?
+  cni        String?
+  poste      String?
+  specialite String?
+  phone      String?
+  email      String?
+  adress     String?
+  secretCode Int?    @default(123456)
+  location   String?
+  avatar     String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String? @unique @db.Uuid
+
+  Zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  consultation Consultation[]
+  Ordonnances  Ordonnances[]
+  Vaccination  Vaccination[]
+}
+
+model Consultation {
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  age          String?
+  acte         String?
+  poids        Float?
+  taille       Float?
+  tA           String?
+  motif        String?
+  temperature  String?
+  pouls        Int?
+  fR           Int?
+  ticketNumber String?
+  serviceName  String?
+
+  prestataireObs  String?
+  prestataireName String?
+  prestataireType String?
+  prestataire     Prestataire? @relation(fields: [prestataireId], references: [id])
+  prestataireId   String?      @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId String?  @db.Uuid
+
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?  @db.Uuid
+
+  date      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  Zone        Zone?         @relation(fields: [zoneId], references: [id])
+  zoneId      String?       @db.Uuid
+  Ordonnances Ordonnances[]
+  Service     Service?      @relation(fields: [serviceId], references: [id])
+  serviceId   String?       @db.Uuid
+}
+
+model Vaccination {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  vaccin    String?
+  injection String?
+  methode   String?
+  lot       String?
+  resultat  String?
+  rappel    String?
+
+  prestataireObs  String?
+  prestataireName String?
+  prestataireType String?
+  prestataire     Prestataire? @relation(fields: [prestataireId], references: [id])
+  prestataireId   String?      @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId String?  @db.Uuid
+
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?  @db.Uuid
+
+  date      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  Zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+}
+
+model Ordonnances {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categorie       String?
+  prescription    String?
+  posologie       String?
+  dureeTraitement String?
+
+  prestataireObs  String?
+  prestataireName String?
+  prestataireType String?
+  prestataire     Prestataire? @relation(fields: [prestataireId], references: [id])
+  prestataireId   String?      @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId String?  @db.Uuid
+
+  consultation   Consultation? @relation(fields: [consultationId], references: [id])
+  consultationId String?       @db.Uuid
+
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?  @db.Uuid
+
+  date      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  Zone       Zone?     @relation(fields: [zoneId], references: [id])
+  zoneId     String?   @db.Uuid
+  Mutuelle   Mutuelle? @relation(fields: [mutuelleId], references: [id])
+  mutuelleId String?   @db.Uuid
+  Service    Service?  @relation(fields: [serviceId], references: [id])
+  serviceId  String?   @db.Uuid
+}
+
+model Role {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  name String @unique
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  User        User[]
+}
+
+model Ticket {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  user     User?   @relation(fields: [userId], references: [id])
+  userId   String? @db.Uuid
+  userName String?
+  userRole String?
+
+  numTicket    Int?
+  type         String?
+  time         String?
+  totalVente   Float   @default(0)
+  totalItem    BigInt  @default(0)
+  modePaiement String?
+
+  patient       Patient? @relation(fields: [patientId], references: [id])
+  patientId     String?  @db.Uuid
+  patientName   String?
+  patientAge    String?
+  patientGender String?
+  matricule     String?
+
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?  @db.Uuid
+
+  zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  Mutuelle        Mutuelle? @relation(fields: [mutuelleId], references: [id])
+  mutuelleId      String?   @db.Uuid
+  mutuelleName    String?
+  mutuelleMontant Float?    @default(0)
+
+  Service    Service?     @relation(fields: [serviceId], references: [id])
+  serviceId  String?      @db.Uuid
+  TicketItem TicketItem[]
+}
+
+model TicketItem {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ticketId   String? @db.Uuid
+  numTicket  Int?
+  typeTicket String?
+  typeVente  String?
+  time       String?
+
+  name            String?
+  quant           BigInt  @default(0)
+  price           String?
+  montant         Float   @default(0)
+  mutuelleMontant Float?  @default(0)
+  total           Float?  @default(0)
+
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?  @db.Uuid
+
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  patientId String?  @db.Uuid
+
+  zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  Mutuelle   Mutuelle? @relation(fields: [mutuelleId], references: [id])
+  mutuelleId String?   @db.Uuid
+
+  Service   Service? @relation(fields: [serviceId], references: [id])
+  serviceId String?  @db.Uuid
+
+  Ticket Ticket? @relation(fields: [ticketId], references: [id])
+}
+
+model Session {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  user     User?   @relation(fields: [userId], references: [id])
+  userId   String? @db.Uuid
+  userName String?
+  userRole String?
+
+  totalVente  Float  @default(0)
+  totalTicket BigInt @default(0)
+
+  type      String?
+  startTime String?
+  endTime   String?
+
+  zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  Ordonnances  Ordonnances[]
+  Vaccination  Vaccination[]
+  Consultation Consultation[]
+  Ticket       Ticket[]
+  Service      Service?       @relation(fields: [serviceId], references: [id])
+  serviceId    String?        @db.Uuid
+  TicketItem   TicketItem[]
+}
+
+model Zone {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String         @unique
+  Companie     Companie[]
+  Patient      Patient[]
+  Consultation Consultation[]
+  Prestataire  Prestataire[]
+  Session      Session[]
+  Ordonnances  Ordonnances[]
+  Vaccination  Vaccination[]
+  Ticket       Ticket[]
+  Mutuelle     Mutuelle[]
+  Service      Service[]
+  TicketItem   TicketItem[]
+}
+
+model Companie {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  name      String
+  email     String? @unique
+  phone     String? @unique
+  manager   String?
+  categorie String?
+  logo      String?
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  User         User[]
+  Consultation Consultation[]
+  Prestataire  Prestataire[]
+
+  Zone        Zone?         @relation(fields: [zoneId], references: [id])
+  zoneId      String?       @db.Uuid
+  Session     Session[]
+  Ordonnances Ordonnances[]
+  Vaccination Vaccination[]
+  Ticket      Ticket[]
+  Service     Service[]
+  TicketItem  TicketItem[]
+}
+
+model Mutuelle {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  name      String
+  email     String? @unique
+  phone     String? @unique
+  manager   String?
+  categorie String?
+  logo      String?
+  adress    String?
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  User User[]
+
+  Zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  Ordonnances Ordonnances[]
+  Patient     Patient[]
+  Ticket      Ticket[]
+  TicketItem  TicketItem[]
+}
+
+model Service {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  name    String
+  email   String? @unique
+  phone   String? @unique
+  manager String?
+
+  isActiveted Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  Zone   Zone?   @relation(fields: [zoneId], references: [id])
+  zoneId String? @db.Uuid
+
+  Companie   Companie? @relation(fields: [companieId], references: [id])
+  companieId String?   @db.Uuid
+
+  User         User[]
+  Ordonnances  Ordonnances[]
+  Consultation Consultation[]
+  Patient      Patient[]
+  Ticket       Ticket[]
+  Session      Session[]
+  TicketItem   TicketItem[]
+}
